@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="bdbutils" default="lib/bdbutils.jar">
+    	<description>BerkeleyDB utilities</description>
+
+   	 <property file="build.properties"/>
+	
+	
+
+	<path id="bdb.lib">
+	      <pathelement path="${berkeleydb.jar}"/>
+	</path>
+	
+
+
+	<target name="lib/bdbutils.jar">
+		<property name="compile.dir" value="tmp"/>
+		<mkdir dir="${compile.dir}"/>
+		
+		<copy todir="${compile.dir}" includeEmptyDirs="true">
+			<fileset dir="src/main/java"/>
+		</copy>
+		
+		<javac srcdir="${compile.dir}"
+			destdir="${compile.dir}"
+			includeantruntime="false"
+			source="1.7"
+			target="1.7">
+		 	<classpath refid="bdb.lib"/>
+			<sourcepath>
+			   <pathelement location="${compile.dir}"/>
+			</sourcepath>
+			<include name="**/*.java"/>
+		 </javac>
+				   		 
+		 <jar destfile="lib/bdbutils.jar"
+			basedir="${compile.dir}">		
+		  </jar>	
+	    	<delete dir="${compile.dir}"/>
+	</target>
+    
+
+    
+</project>
