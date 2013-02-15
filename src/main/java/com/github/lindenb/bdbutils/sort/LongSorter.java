@@ -1,14 +1,13 @@
 package com.github.lindenb.bdbutils.sort;
 
-import com.sleepycat.bind.tuple.TupleInput;
 
 
 public class LongSorter
 	extends AbstractSorterComparable<Long>
 	{
 	@Override
-	protected Long translate(final byte a[])
+	protected Long translate(final byte a[],int offset,int len)
 		{
-		return entryToInput(a).readLong();
+		return entryToInput(a,offset,len).readLong();
 		}
 	}

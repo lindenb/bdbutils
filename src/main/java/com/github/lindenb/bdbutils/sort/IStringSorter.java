@@ -1,6 +1,5 @@
 package com.github.lindenb.bdbutils.sort;
 
-import com.sleepycat.bind.tuple.TupleInput;
 
 
 public class IStringSorter

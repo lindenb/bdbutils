@@ -18,7 +18,7 @@ public class GZipBinding<T>
 	{
 	private TupleBinding<T> delegate=null;
 	
-	public GZipBinding( TupleBinding<T> keyBinding )
+	public GZipBinding( TupleBinding<T> delegate )
 		{
 		this.delegate=delegate;
 		}

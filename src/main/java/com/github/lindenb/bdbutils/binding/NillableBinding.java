@@ -1,7 +1,5 @@
 package com.github.lindenb.bdbutils.binding;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
@@ -12,7 +10,7 @@ public class NillableBinding<T>
 	{
 	private TupleBinding<T> delegate=null;
 	
-	public NillableBinding( TupleBinding<T> keyBinding )
+	public NillableBinding( TupleBinding<T> delegate )
 		{
 		this.delegate=delegate;
 		}
