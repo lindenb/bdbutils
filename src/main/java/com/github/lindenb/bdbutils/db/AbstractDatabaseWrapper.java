@@ -15,65 +15,42 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
-public class DatabaseWrapper<K,V>
-	extends AbstractDatabaseWrapper<K,V>
+public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.je.Database>
+	implements Iterable<Pair<K, V>>, Closeable
 	{
-	private Database database=null;
-	private EntryBinding<V> this.dataBinding;
-	private List<SecondaryDatabaseWrapper<?,K,V> > secondaries=new ArrayList();
+	private EntryBinding<K> keyBinding;
+	private EntryBinding<V> dataBinding;
+
 	
-	public DatabaseWrapper()
+	protected AbstractDatabaseWrapper()
 		{
 
 		}
 	
-	@Override
-	public EntryBinding<V> getDataBinding()
-		{
-		return this.dataBinding;
-		}
-	
-		
-	public void setDataBinding(EntryBinding<V> dataBinding)
-		{
-		this.dataBinding=dataBinding;
-		}
-	
-	
-	public Database getDatabase()
-		{
-		return database;
-		}
-	
-	public DatabaseWrapper<K,V> open(Transaction txn,Environment env,DatabaseConfig dbConfig)
-		{
-		 if(this.database==null)
-		 	{
-		 	this.database=env.openDatabase(Transaction txn,getName(), DatabaseConfig dbConfig) 
-		 	}
-		return this;
-		}
-	
-	@Override
-	protected Database getDb()
-		{
-		return getDatabase();
-		}
-	
-	public void close()
-		{
-		for(SecondaryDatabaseWrapper sec: secondaries)
-			{
-			sec.close();
-			}
-		if(this.database!=null)
-			{
-			this.database.close();
-			this.database=null;
-			}
-		}
-	
 
+	
+	protected DbType Database getDb();
+	
+	public boolean isOpen()
+		{
+		return getDb()!=null;
+		}
+	
+	
+	
+	
+	public EntryBinding<K> getKeyBinding()
+		{
+		return this.keyBinding;
+		}
+	
+	public void setKeyBinding(EntryBinding<K> keyBinding)
+		{
+		this.keyBinding=keyBinding;
+		}
+	
+	public abstract EntryBinding<V> getDataBinding();
+	
 	
 	private <X> DatabaseEntry createEntry(TupleBinding<X> bind,X x)
 		{
@@ -102,7 +79,7 @@ public class DatabaseWrapper<K,V>
 	public DatabaseEntry getEntry(Transaction txn,DatabaseEntry k,LockMode lck)
 		{
 		DatabaseEntry e= new DatabaseEntry();
-		if( getDatabase().get(txn, k,e,lck)==OperationStatus.SUCCESS) return e;
+		if( getDb().get(txn, k,e,lck)==OperationStatus.SUCCESS) return e;
 		return null;
 		}
 	
@@ -123,7 +100,7 @@ public class DatabaseWrapper<K,V>
 
 	public boolean putEntries(Transaction txn,DatabaseEntry k,DatabaseEntry v)
 		{
-		return this.getDatabase().put(txn, k, v)==OperationStatus.SUCCESS;
+		return this.getDb().put(txn, k, v)==OperationStatus.SUCCESS;
 		}	
 
 	
@@ -147,7 +124,7 @@ public class DatabaseWrapper<K,V>
 	
 	public Cursor openCursor(Transaction txn)
 		{
-		return getDatabase().openCursor(txn, null);
+		return getDb().openCursor(txn, null);
 		}
 	
 	public Iterator<Pair<DatabaseEntry,DatabaseEntry>> entriesIterator(Transaction txn,LockMode lockMode)

@@ -5,30 +5,22 @@ import java.lang.reflect.Constructor;
 import com.sleepycat.bind.tuple.TupleInput;
 import com.sleepycat.bind.tuple.TupleOutput;
 
-public class TupleSerializableBinding<T extends TupleSerializable> extends AbstractTupleBinding<T> {
-	private Constructor<T> ctor;
-	
-	public TupleSerializableBinding(Class<T> clazz)
+public abstract class TupleSerializableBinding<T extends TupleSerializable>
+	extends AbstractTupleBinding<T>
+	{
+	public TupleSerializableBinding()
 		{
-		try {
-			this.ctor=clazz.getDeclaredConstructor();
-			}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-			}
 		}
+	
+	/** create a new instance of T */
+	protected abstract T newInstance();
 	
 	@Override
 	public T entryToObject(TupleInput in)
 		{
-		try {
-			T o=this.ctor.newInstance();
-			o.readFromTupleInput(in);
-			return o;
-			}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-			}
+		T o= newInstance();
+		o.readFromTupleInput(in);
+		return o;
 		}
 
 	@Override
@@ -36,5 +28,4 @@ public class TupleSerializableBinding<T extends TupleSerializable> extends Abstr
 		{
 		o.writeToTupleOutpout(out);
 		}
-
-}
+	}
