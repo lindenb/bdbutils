@@ -200,7 +200,7 @@ public class FastXMLEventWriter implements XMLEventWriter
 	public static void main(String[] args) throws XMLStreamException,IOException
 		{
 		TupleOutput t=new TupleOutput();
-		XMLEventWriter out=new FastXMLEventWriter(t);
+		XMLEventWriter out=new FastXMLEventWriter(t,null);
 		XMLInputFactory xmlfactory= XMLInputFactory.newInstance();
 		XMLEventReader r=xmlfactory.createXMLEventReader(System.in);
 		out.add(r);

@@ -15,11 +15,10 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
-public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.je.Database>
-	implements Iterable<Pair<K, V>>, Closeable
+public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSORTYPE extends Cursor>
+	implements Iterable<Pair<K, V>>
 	{
 	private EntryBinding<K> keyBinding;
-	private EntryBinding<V> dataBinding;
 
 	
 	protected AbstractDatabaseWrapper()
@@ -29,15 +28,14 @@ public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.j
 	
 
 	
-	protected DbType Database getDb();
+	protected abstract DBTYPE getDatabase();
 	
 	public boolean isOpen()
 		{
-		return getDb()!=null;
+		return getDatabase()!=null;
 		}
 	
-	
-	
+	public abstract void close();
 	
 	public EntryBinding<K> getKeyBinding()
 		{
@@ -52,7 +50,7 @@ public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.j
 	public abstract EntryBinding<V> getDataBinding();
 	
 	
-	private <X> DatabaseEntry createEntry(TupleBinding<X> bind,X x)
+	private <X> DatabaseEntry createEntry(EntryBinding<X> bind,X x)
 		{
 		DatabaseEntry e=new DatabaseEntry();
 		bind.objectToEntry(x, e);
@@ -79,7 +77,7 @@ public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.j
 	public DatabaseEntry getEntry(Transaction txn,DatabaseEntry k,LockMode lck)
 		{
 		DatabaseEntry e= new DatabaseEntry();
-		if( getDb().get(txn, k,e,lck)==OperationStatus.SUCCESS) return e;
+		if( getDatabase().get(txn, k,e,lck)==OperationStatus.SUCCESS) return e;
 		return null;
 		}
 	
@@ -92,16 +90,6 @@ public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.j
 		{
 		return createEntry(getDataBinding(),v);
 		}
-	
-	public boolean put(Transaction txn,K k,V v)
-		{
-		return putEntries(txn, createKeyEntry(k), createDataEntry(v));
-		}	
-
-	public boolean putEntries(Transaction txn,DatabaseEntry k,DatabaseEntry v)
-		{
-		return this.getDb().put(txn, k, v)==OperationStatus.SUCCESS;
-		}	
 
 	
 	
@@ -122,14 +110,12 @@ public abstract class AbstractDatabaseWrapper<K,V,DbType extends com.sleepycat.j
 				};
 		}
 	
-	public Cursor openCursor(Transaction txn)
-		{
-		return getDb().openCursor(txn, null);
-		}
+	
+	public abstract CURSORTYPE openCursor(Transaction txn);
 	
 	public Iterator<Pair<DatabaseEntry,DatabaseEntry>> entriesIterator(Transaction txn,LockMode lockMode)
 		{
-		Cursor c=openCursor(txn);
+		CURSORTYPE c=openCursor(txn);
 		DatabaseEntry data=new DatabaseEntry();
 		DatabaseEntry key=new DatabaseEntry();
 		return new CursorIterator(c, key, data, lockMode);

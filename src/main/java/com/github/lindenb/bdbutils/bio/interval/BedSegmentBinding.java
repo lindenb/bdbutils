@@ -1,5 +1,7 @@
 package com.github.lindenb.bdbutils.bio.interval;
 
+import com.github.lindenb.bdbutils.binding.FixedSizeBinding;
+
 
 public class BedSegmentBinding
 	extends FixedSizeBinding<BedSegment>
@@ -15,9 +17,8 @@ public class BedSegmentBinding
 		return INSTANCE;
 		}	
 
-	@override
-	protected T newInstance();
-		{
+	@Override
+	protected BedSegment newInstance() {
 		return new BedSegment();
 		}
 	}

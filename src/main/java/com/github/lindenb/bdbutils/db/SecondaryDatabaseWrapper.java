@@ -1,22 +1,17 @@
 package com.github.lindenb.bdbutils.db;
 
-import java.util.Iterator;
 
-import com.github.lindenb.bdbutils.util.CursorIterator;
-import com.github.lindenb.bdbutils.util.EqualRangeCursorIterator;
-import com.github.lindenb.bdbutils.util.Function;
-import com.github.lindenb.bdbutils.util.Pair;
-import com.github.lindenb.bdbutils.util.TransformIterator;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
+import com.sleepycat.je.Environment;
+import com.sleepycat.je.SecondaryConfig;
+import com.sleepycat.je.SecondaryCursor;
+import com.sleepycat.je.SecondaryDatabase;
 import com.sleepycat.je.Transaction;
 
 public class SecondaryDatabaseWrapper<K,PKEY,V>
-	extends AbstractDatabaseWrapper<K,V>
+	extends AbstractDatabaseWrapper<K,V,SecondaryDatabase,SecondaryCursor>
 	{
 	private SecondaryDatabase database=null;
 	private DatabaseWrapper<PKEY,V> primaryDb=null;
@@ -39,13 +34,20 @@ public class SecondaryDatabaseWrapper<K,PKEY,V>
 		return getOwner().getDataBinding();
 		}
 	
-	
+	@Override
 	public SecondaryDatabase getDatabase()
 		{
 		return this.database;
 		}
 	
-	public SecondaryDatabaseWrapper<K,V,PKEY> open(
+	@Override
+	public SecondaryCursor openCursor(Transaction txn)
+		{
+		return getDatabase().openCursor(txn, null);
+		}
+
+	
+	public SecondaryDatabaseWrapper<K,PKEY,V> open(
 		Transaction txn,
 		String databaseName,
 		DatabaseWrapper<PKEY,V> primary,
@@ -54,11 +56,11 @@ public class SecondaryDatabaseWrapper<K,PKEY,V>
 		{
 		if(this.database!=null)
 			{
-			this.database=openSecondaryDatabase(
+			this.database=primary.getDatabase().getEnvironment().openSecondaryDatabase(
 				txn,
-				String databaseName,
+				databaseName,
 				primary.getDatabase(),
-				SecondaryConfig dbConfig
+				dbConfig
 				);
 			this.primaryDb=primary;
 			}

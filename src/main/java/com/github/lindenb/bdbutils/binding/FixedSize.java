@@ -1,8 +1,5 @@
 package com.github.lindenb.bdbutils.binding;
 
-import com.sleepycat.bind.tuple.TupleInput;
-import com.sleepycat.bind.tuple.TupleOutput;
-
 /**
  * Interface for objects having a fixed size when serialized to
  * an array of bytes and that are able to write/read themselves.

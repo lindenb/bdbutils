@@ -1,6 +1,8 @@
 package com.github.lindenb.bdbutils.db;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.github.lindenb.bdbutils.util.CursorIterator;
 import com.github.lindenb.bdbutils.util.EqualRangeCursorIterator;
@@ -10,17 +12,19 @@ import com.github.lindenb.bdbutils.util.TransformIterator;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
+import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
 public class DatabaseWrapper<K,V>
-	extends AbstractDatabaseWrapper<K,V>
+	extends AbstractDatabaseWrapper<K,V,Database,Cursor>
 	{
 	private Database database=null;
-	private EntryBinding<V> this.dataBinding;
-	private List<SecondaryDatabaseWrapper<?,K,V> > secondaries=new ArrayList();
+	private EntryBinding<V> dataBinding;
+	protected List<SecondaryDatabaseWrapper<?,K,V> > secondaries=new ArrayList<SecondaryDatabaseWrapper<?,K,V>>();
 	
 	public DatabaseWrapper()
 		{
@@ -39,33 +43,42 @@ public class DatabaseWrapper<K,V>
 		this.dataBinding=dataBinding;
 		}
 	
-	
+	@Override
 	public Database getDatabase()
 		{
 		return database;
 		}
 	
-	public DatabaseWrapper<K,V> open(Transaction txn,Environment env,DatabaseConfig dbConfig)
+	public DatabaseWrapper<K,V> open(Environment env,Transaction txn,String name,DatabaseConfig dbConfig)
 		{
 		 if(this.database==null)
 		 	{
-		 	this.database=env.openDatabase(Transaction txn,getName(), DatabaseConfig dbConfig) 
+		 	this.database=env.openDatabase(txn,name,dbConfig) ;
 		 	}
 		return this;
 		}
 	
-	@Override
-	protected Database getDb()
+	protected void openSecondaries()
 		{
-		return getDatabase();
+		
 		}
 	
-	public void close()
+	
+	
+	
+	
+	protected void closeSecondaries()
 		{
-		for(SecondaryDatabaseWrapper sec: secondaries)
+		for(SecondaryDatabaseWrapper<?,?,?> sec: secondaries)
 			{
 			sec.close();
 			}
+		}
+	
+	@Override
+	public void close()
+		{
+		closeSecondaries();
 		if(this.database!=null)
 			{
 			this.database.close();
@@ -75,7 +88,7 @@ public class DatabaseWrapper<K,V>
 	
 
 	
-	private <X> DatabaseEntry createEntry(TupleBinding<X> bind,X x)
+	private <X> DatabaseEntry createEntry(EntryBinding<X> bind,X x)
 		{
 		DatabaseEntry e=new DatabaseEntry();
 		bind.objectToEntry(x, e);
@@ -145,6 +158,7 @@ public class DatabaseWrapper<K,V>
 				};
 		}
 	
+	@Override
 	public Cursor openCursor(Transaction txn)
 		{
 		return getDatabase().openCursor(txn, null);
@@ -206,4 +220,7 @@ public class DatabaseWrapper<K,V>
 		{
 		return iterator(null,null);
 		}
+	
+	
+	
 	}

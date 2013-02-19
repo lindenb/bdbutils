@@ -1,5 +1,8 @@
 package com.github.lindenb.bdbutils.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ExtendedIterator<T> implements CloseableIterator<T>
 	{
 	protected boolean _hasNextCalled=false;
@@ -84,4 +87,15 @@ public class ExtendedIterator<T> implements CloseableIterator<T>
 		close();
 		super.finalize();
 		}
+	
+	public List<T> asList()
+		{
+		List<T> L=new ArrayList<T>();
+		while(this.hasNext())
+			{
+			L.add(this.next());
+			}
+		return L;
+		}
+	
 	}

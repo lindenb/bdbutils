@@ -8,14 +8,14 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 
-public class EqualRangeCursorIterator extends CursorIterator
+public class EqualRangeCursorIterator<T extends Cursor> extends CursorIterator<T>
 	{
 	private CursorMove cursorMove=CursorMove.SEARCH_KEY_RANGE;
 	private DatabaseEntry max;
 	private boolean includeLast;
 	private Comparator<byte[]> comparator;
 	public EqualRangeCursorIterator(
-			Cursor cursor,
+			T cursor,
 			DatabaseEntry min,
 			DatabaseEntry max,
 			boolean includeLast,

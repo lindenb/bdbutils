@@ -1,8 +1,14 @@
 package com.github.lindenb.bdbutils.bio.interval;
 
+import com.github.lindenb.bdbutils.binding.FixedSize;
+import com.github.lindenb.bdbutils.binding.TupleSerializable;
+import com.github.lindenb.bdbutils.util.ByteUtils;
+import com.sleepycat.bind.tuple.TupleInput;
+import com.sleepycat.bind.tuple.TupleOutput;
+
 
 public class BedSegment
-	implements FixedSize,Cloneable
+	implements FixedSize,Cloneable,TupleSerializable
 	{
 	public static final int SIZEOF=Integer.SIZE*2+Byte.SIZE;
 	private byte tid;
@@ -60,15 +66,41 @@ public class BedSegment
 	@Override
 	public int writeToBytes(byte array[],int offset)
 		{
-		this.tid=ByteUtils.writeByte(array,offset);
+		ByteUtils.writeByte(this.tid,array,offset);
 		offset+=Byte.SIZE;
-		this.start=ByteUtils.writeInt(array,offset);
+		ByteUtils.writeInt(this.start,array,offset);
 		offset+=Integer.SIZE;
-		this.end=ByteUtils.writeInt(array,offset);
+		ByteUtils.writeInt(this.end,array,offset);
 		offset+=Integer.SIZE;
 		return offset;
 		}
-		
+	
+	@Override
+	public void readFromTupleInput(TupleInput in)
+		{
+		byte array[]=new byte[BedSegment.SIZEOF];
+		in.read(array);
+		readFromBytes(array,0);
+		}
+	
+	@Override
+	public void writeToTupleOutpout(TupleOutput out)
+		{
+		byte array[]=new byte[BedSegment.SIZEOF];
+		writeToBytes(array,0);
+		out.write(array);
+		}
+	
+	public int getBin()
+		{
+		return TidBinPos.bin(this.start, this.end);
+		}
+	
+	public TidBinPos toTidBinPos()
+		{
+		return new TidBinPos(getTid(), getBin(), getStart());
+		}
+	
 	/** sizeo of structure */
 	public int getSizeOf()
 		{
@@ -84,22 +116,32 @@ public class BedSegment
 		return end - o .end;
 		}
 		
-	@Override
-	public int hashCode()
-		{
-		TODO
-		}
+	
 	
 	@Override
-	public boolean equals(Object o)
-		{
-		if(this==o) return true;
-		if(o==null || !(o instanceof BedSegment)) return false;
-		BedSegment o=BedSegment.class.cast(o);
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + end;
+		result = prime * result + start;
+		result = prime * result + tid;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BedSegment o = (BedSegment) obj;
 		return  this.tid==o.tid &&
-			this.start==o.start &&
-			this.end==o.end;
-		}
+				this.start==o.start &&
+				this.end==o.end;
+	}
+
 	
 	@Override
 	public String toString()

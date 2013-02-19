@@ -1,10 +1,8 @@
 package com.github.lindenb.bdbutils.binding;
 
-import java.lang.reflect.Constructor;
-
-
 import com.sleepycat.bind.EntryBinding;
-import com.sleepycat.db.DatabaseEntry;
+import com.sleepycat.je.DatabaseEntry;
+
 
 public abstract class FixedSizeBinding<T extends FixedSize>
 	implements EntryBinding<T>
@@ -19,7 +17,7 @@ public abstract class FixedSizeBinding<T extends FixedSize>
 	
 	
 	@Override
-	public T entryToObject(DatabaseEntry in)
+	public T entryToObject(final DatabaseEntry in)
 		{
 		T o=newInstance();
 		o.readFromBytes(in.getData(),0);
@@ -29,7 +27,7 @@ public abstract class FixedSizeBinding<T extends FixedSize>
 	@Override
 	public void objectToEntry(final T o, DatabaseEntry out)
 		{
-		byte array[]=new byte[o.getSizeOf());
+		byte array[]=new byte[o.getSizeOf()];
 		o.writeToBytes(array,0);
 		out.setData(array);
 		}
