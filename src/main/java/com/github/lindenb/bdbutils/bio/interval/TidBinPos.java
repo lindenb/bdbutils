@@ -3,6 +3,7 @@ package com.github.lindenb.bdbutils.bio.interval;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lindenb.bdbutils.binding.AbstractFixedSize;
 import com.github.lindenb.bdbutils.binding.FixedSize;
 import com.github.lindenb.bdbutils.binding.TupleSerializable;
 import com.github.lindenb.bdbutils.util.ByteUtils;
@@ -11,9 +12,10 @@ import com.sleepycat.bind.tuple.TupleOutput;
 
 
 public class TidBinPos
+	extends AbstractFixedSize
 	implements FixedSize,Cloneable,TupleSerializable
 	{
-	public static final int SIZEOF=Integer.SIZE*2+Byte.SIZE;
+	public static final int SIZEOF=ByteUtils.BYTE_SIZE+ByteUtils.INT_SIZE*2;
 	private static final int MAX_BIN = 37450;
 	static private final int binOffsets[] = {512+64+8+1, 64+8+1, 8+1, 1, 0};
 
@@ -76,7 +78,7 @@ public class TidBinPos
 	public static List<Integer> reg2bin(final int beg, final int _end)
 		{
 		List<Integer> list=new ArrayList<Integer>(MAX_BIN);
-		int i = 0, k, end = _end;
+		int  k, end = _end;
 		if (beg >= end) throw new IllegalArgumentException("");
 		if (end >= 1<<29) end = 1<<29;
 		--end;
@@ -94,11 +96,11 @@ public class TidBinPos
 	public int readFromBytes(final byte array[],int offset)
 		{
 		this.tid=ByteUtils.readByte(array,offset);
-		offset+=Byte.SIZE;
+		offset+=ByteUtils.BYTE_SIZE;
 		this.bin=ByteUtils.readInt(array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		this.pos=ByteUtils.readInt(array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		return offset;
 		}
 	
@@ -107,11 +109,11 @@ public class TidBinPos
 	public int writeToBytes(byte array[],int offset)
 		{
 		ByteUtils.writeByte(this.tid,array,offset);
-		offset+=Byte.SIZE;
+		offset+=ByteUtils.BYTE_SIZE;
 		ByteUtils.writeInt(this.bin,array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		ByteUtils.writeInt(this.pos,array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		return offset;
 		}
 	

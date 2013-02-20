@@ -1,5 +1,6 @@
 package com.github.lindenb.bdbutils.bio.interval;
 
+import com.github.lindenb.bdbutils.binding.AbstractFixedSize;
 import com.github.lindenb.bdbutils.binding.FixedSize;
 import com.github.lindenb.bdbutils.binding.TupleSerializable;
 import com.github.lindenb.bdbutils.util.ByteUtils;
@@ -8,9 +9,10 @@ import com.sleepycat.bind.tuple.TupleOutput;
 
 
 public class BedSegment
+	extends AbstractFixedSize
 	implements FixedSize,Cloneable,TupleSerializable
 	{
-	public static final int SIZEOF=Integer.SIZE*2+Byte.SIZE;
+	public static final int SIZEOF=ByteUtils.BYTE_SIZE+ByteUtils.INT_SIZE*2;
 	private byte tid;
 	private int start;
 	private int end;
@@ -54,11 +56,11 @@ public class BedSegment
 	public int readFromBytes(final byte array[],int offset)
 		{
 		this.tid=ByteUtils.readByte(array,offset);
-		offset+=Byte.SIZE;
+		offset+=ByteUtils.BYTE_SIZE;
 		this.start=ByteUtils.readInt(array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		this.end=ByteUtils.readInt(array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		return offset;
 		}
 	
@@ -67,11 +69,11 @@ public class BedSegment
 	public int writeToBytes(byte array[],int offset)
 		{
 		ByteUtils.writeByte(this.tid,array,offset);
-		offset+=Byte.SIZE;
+		offset+=ByteUtils.BYTE_SIZE;
 		ByteUtils.writeInt(this.start,array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		ByteUtils.writeInt(this.end,array,offset);
-		offset+=Integer.SIZE;
+		offset+=ByteUtils.INT_SIZE;
 		return offset;
 		}
 	

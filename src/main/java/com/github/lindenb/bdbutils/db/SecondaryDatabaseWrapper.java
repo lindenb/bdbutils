@@ -2,9 +2,6 @@ package com.github.lindenb.bdbutils.db;
 
 
 import com.sleepycat.bind.EntryBinding;
-import com.sleepycat.je.Cursor;
-import com.sleepycat.je.Database;
-import com.sleepycat.je.Environment;
 import com.sleepycat.je.SecondaryConfig;
 import com.sleepycat.je.SecondaryCursor;
 import com.sleepycat.je.SecondaryDatabase;
@@ -54,7 +51,7 @@ public class SecondaryDatabaseWrapper<K,PKEY,V>
 		SecondaryConfig dbConfig
 		)
 		{
-		if(this.database!=null)
+		if(this.database==null)
 			{
 			this.database=primary.getDatabase().getEnvironment().openSecondaryDatabase(
 				txn,

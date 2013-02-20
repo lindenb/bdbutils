@@ -2,10 +2,18 @@ package com.github.lindenb.bdbutils.util;
 
 
 public class ByteUtils
-{
-	public ByteUtils()
 	{
-	}
+	public static final int BYTE_SIZE=1;
+	public static final int SHORT_SIZE=2;
+	public static final int INT_SIZE=4;
+	public static final int LONG_SIZE=8;
+	public static final int FLOAT_SIZE=INT_SIZE;
+	public static final int DOUBLE_SIZE=LONG_SIZE;
+	
+	
+	public ByteUtils()
+		{
+		}	
 
 	public static int writeByte(int val, byte array[],int offset)
 	{
@@ -97,10 +105,13 @@ public class ByteUtils
 
 	public static int readUnsignedByte(final byte array[],int offset)
 		{
-		return array[offset];
+		return get(array,offset);
 		}      
 
-
+	private static int get(final byte array[],int offset)
+		{
+		return array[offset] & 0xff;
+		}
 
 	public static boolean readBoolean(final byte array[],int offset)
 	{
@@ -113,9 +124,11 @@ public class ByteUtils
 	}	
 
 	public static int readUnsignedShort(final byte array[],int offset)
-	{
-		return ((array[offset] << 8) | array[offset+1]);
-	}
+		{
+        int c1 =  get(array,offset++);
+        int c2 =  get(array,offset++);
+        return ((c1 << 8) | c2);
+		}
 	
 	public static int readInt(final byte array[],int offset)
 	{
@@ -124,17 +137,32 @@ public class ByteUtils
 
 	public static long readUnsignedInt(final byte array[],int offset)
 	{
-		return ((array[offset+0] << 24) | (array[offset+1] << 16) | (array[offset+2] << 8) | array[offset+3]);
+		long c1 = get(array,offset++);
+        long c2 = get(array,offset++);
+        long c3 = get(array,offset++);
+        long c4 = get(array,offset++);
+        return ((c1 << 24) | (c2 << 16) | (c3 << 8) | c4);
 	}
+	
 	public static long readLong(final byte array[],int offset)
 		{
 		 return readUnsignedLong(array,offset) ^ 0x8000000000000000L;
 		}
 
-	public static int readUnsignedLong(final byte array[],int offset)
+	public static long readUnsignedLong(final byte array[],int offset)
 		{
-		 return ((array[offset+0] << 56) | (array[offset+1] << 48) | (array[offset+2] << 40) | (array[offset+3] << 32) |
-	                (array[offset+4] << 24) | (array[offset+5] << 16) | (array[offset+6] << 8)  | array[offset+7]);
+        long c1 = get(array,offset++);
+        long c2 = get(array,offset++);
+        long c3 = get(array,offset++);
+        long c4 = get(array,offset++);
+        long c5 = get(array,offset++);
+        long c6 = get(array,offset++);
+        long c7 = get(array,offset++);
+        long c8 = get(array,offset++);
+      
+        return ((c1 << 56) | (c2 << 48) | (c3 << 40) | (c4 << 32) |
+                (c5 << 24) | (c6 << 16) | (c7 << 8)  | c8);
+
 		}
 	
 	public static float readFloat(final byte array[],int offset)

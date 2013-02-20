@@ -1,7 +1,10 @@
 package com.github.lindenb.bdbutils.db;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
+import com.github.lindenb.bdbutils.util.CloseableIterator;
 import com.github.lindenb.bdbutils.util.CursorIterator;
 import com.github.lindenb.bdbutils.util.EqualRangeCursorIterator;
 import com.github.lindenb.bdbutils.util.Function;
@@ -74,6 +77,31 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 		return e==null?null:getDataBinding().entryToObject(e);
 		}
 	
+	public List<V> getAll(Transaction txn,K k,LockMode lockMode)
+		{
+		List<V> L=new ArrayList<V>();
+		CURSORTYPE c=null;
+		DatabaseEntry key=new DatabaseEntry();
+		DatabaseEntry value=new DatabaseEntry();
+		try
+			{
+			c=openCursor(txn);
+			keyToEntry(k, key);
+			CursorMove move=CursorMove.SEARCH_KEY;
+			while(move.move(c, key, value, lockMode)==OperationStatus.SUCCESS)
+				{
+				L.add(entryToData(value));
+				move=CursorMove.NEXT_DUP;
+				}
+			}
+		finally
+			{
+			if(c!=null) c.close();
+			}
+		return L;
+		}
+	
+	
 	public DatabaseEntry getEntry(Transaction txn,DatabaseEntry k,LockMode lck)
 		{
 		DatabaseEntry e= new DatabaseEntry();
@@ -91,7 +119,26 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 		return createEntry(getDataBinding(),v);
 		}
 
+	protected void keyToEntry(final K key,DatabaseEntry e)
+		{
+		getKeyBinding().objectToEntry(key, e);
+		}
 	
+	protected void dataToEntry(final V v,DatabaseEntry e)
+		{
+		getDataBinding().objectToEntry(v, e);
+		}
+
+	protected K entryToKey(final DatabaseEntry e)
+		{
+		return getKeyBinding().entryToObject(e);
+		}
+	
+	protected V entryToData(final DatabaseEntry e)
+		{
+		return getDataBinding().entryToObject(e);
+		}
+
 	
 	protected Function<Pair<DatabaseEntry,DatabaseEntry>,Pair<K,V>> createFunction()
 		{
@@ -118,10 +165,10 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 		CURSORTYPE c=openCursor(txn);
 		DatabaseEntry data=new DatabaseEntry();
 		DatabaseEntry key=new DatabaseEntry();
-		return new CursorIterator(c, key, data, lockMode);
+		return new CursorIterator<CURSORTYPE>(c, key, data, lockMode);
 		}
 	
-	public Iterator<Pair<K, V>> iterator(Transaction txn,LockMode lockMode)
+	public CloseableIterator<Pair<K, V>> iterator(Transaction txn,LockMode lockMode)
 		{
 		return new TransformIterator<Pair<DatabaseEntry,DatabaseEntry>,Pair<K,V> >(
 				entriesIterator(txn, lockMode), 
@@ -131,7 +178,7 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 	
 	
 	
-	public  Iterator<Pair<K,V>> between(
+	public  CloseableIterator<Pair<K,V>> between(
 			Transaction txn,
 			K min,
 			K max,
@@ -158,14 +205,14 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 			LockMode lockMode
 			)
 		{
-		Cursor c=openCursor(txn);
+		CURSORTYPE c=openCursor(txn);
 		DatabaseEntry data=new DatabaseEntry();
-		return new EqualRangeCursorIterator(c,min,max,includeLast,data,lockMode);
+		return new EqualRangeCursorIterator<CURSORTYPE>(c,min,max,includeLast,data,lockMode);
 		}
 	
 	
 	@Override
-	public Iterator<Pair<K, V>> iterator()
+	public CloseableIterator<Pair<K, V>> iterator()
 		{
 		return iterator(null,null);
 		}

@@ -11,9 +11,9 @@ public class BedSegmentSorter
 	public int compare(byte[] o1, byte[] o2) {
 		int i=(int)ByteUtils.readByte(o1, 0) - (int)ByteUtils.readByte(o2, 0);
 		if(i!=0) return i;
-		i=(int)ByteUtils.readInt(o1, Byte.SIZE) - (int)ByteUtils.readInt(o2,  Byte.SIZE);
+		i=(int)ByteUtils.readInt(o1, ByteUtils.BYTE_SIZE) - (int)ByteUtils.readInt(o2,  ByteUtils.BYTE_SIZE);
 		if(i!=0) return i;
-		i=(int)ByteUtils.readInt(o1, Byte.SIZE+Integer.SIZE) - (int)ByteUtils.readInt(o2,  Byte.SIZE+Integer.SIZE);
+		i=(int)ByteUtils.readInt(o1, ByteUtils.BYTE_SIZE+ByteUtils.INT_SIZE) - (int)ByteUtils.readInt(o2,  ByteUtils.BYTE_SIZE+ByteUtils.INT_SIZE);
 		return i;
 		}
 	}
