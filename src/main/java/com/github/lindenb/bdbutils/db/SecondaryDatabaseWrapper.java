@@ -28,6 +28,8 @@ public class SecondaryDatabaseWrapper<K,PKEY,V>
 	@Override
 	public EntryBinding<V> getDataBinding()
 		{
+		if(getOwner()==null) throw new NullPointerException();
+		if(getOwner().getDataBinding()==null) throw new NullPointerException();
 		return getOwner().getDataBinding();
 		}
 	
@@ -51,15 +53,16 @@ public class SecondaryDatabaseWrapper<K,PKEY,V>
 		SecondaryConfig dbConfig
 		)
 		{
+	
 		if(this.database==null)
 			{
+			this.primaryDb=primary;
 			this.database=primary.getDatabase().getEnvironment().openSecondaryDatabase(
 				txn,
 				databaseName,
 				primary.getDatabase(),
 				dbConfig
 				);
-			this.primaryDb=primary;
 			}
 		return this;
 		}
