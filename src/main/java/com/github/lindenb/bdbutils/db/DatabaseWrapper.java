@@ -1,5 +1,7 @@
 package com.github.lindenb.bdbutils.db;
 
+import java.util.Comparator;
+
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
@@ -99,8 +101,42 @@ public class DatabaseWrapper<K,V>
 		return getDatabase().openCursor(txn, null);
 		}
 	
-
+	/** delete records from key(begin,end) */
+	public boolean delete(Transaction txn,K key)
+		{
+		return getDatabase().delete(txn, createKeyEntry(key))==OperationStatus.SUCCESS;
+		}
 	
-	
-
+	/** delete records from key(begin,end). Returns the number of records deleted */
+	public long delete(Transaction txn,K keyBegin,K keyEnd,boolean includeLast)
+		{
+		long n_removed=0;
+		Cursor c=null;
+		DatabaseEntry k=createKeyEntry(keyBegin);
+		DatabaseEntry kE=createKeyEntry(keyEnd);
+		Comparator<byte[]> cmp=getDatabase().getConfig().getBtreeComparator();
+		DatabaseEntry v=new DatabaseEntry();
+		try {
+			c=openCursor(txn);
+			CursorMove mover=CursorMove.SEARCH_KEY_RANGE;
+			while(mover.move(c,k,v, LockMode.DEFAULT)==OperationStatus.SUCCESS)
+				{
+				int diff=cmp.compare(
+						k.getData(),
+						kE.getData()
+						);
+				if(diff>0 || (diff==0 && !includeLast)) break;
+				if(c.delete()==OperationStatus.SUCCESS)
+					{
+					n_removed++;
+					}
+				mover=CursorMove.NEXT;
+				}
+			}
+		finally
+			{
+			if(c!=null) c.close();
+			}
+		return n_removed;
+		}
 	}

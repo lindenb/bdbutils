@@ -5,9 +5,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lindenb.bdbutils.util.BerkeleyDbUtils;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import com.sleepycat.je.Transaction;
 
 public class EnvironmentWrapper
 	{
@@ -32,19 +32,7 @@ public class EnvironmentWrapper
 	
 	public static long du(File home)
 		{
-		long N=0L;
-		for(File f:home.listFiles())
-			{
-			if(f.isDirectory())
-				{
-				N+=du(f);
-				}
-			else
-				{
-				N+=f.length();
-				}
-			}
-		return N;
+		return BerkeleyDbUtils.diskUsage(home);
 		}
 	
 	public static String DirUsage(File home)

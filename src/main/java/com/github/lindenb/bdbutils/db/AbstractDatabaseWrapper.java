@@ -1,6 +1,7 @@
 package com.github.lindenb.bdbutils.db;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -216,4 +217,81 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 		{
 		return iterator(null,null);
 		}
+	
+	public boolean isEmpty(Transaction txn)
+		{
+		CURSORTYPE c=null;
+		try {
+			c=openCursor(txn);
+			return c.getNext(new DatabaseEntry(),new DatabaseEntry(), null)!=OperationStatus.SUCCESS;
+			}
+		finally
+			{
+			if(c!=null) c.close();
+			}
+		}
+	
+	private K keyByMove(CursorMove mover,Transaction txn)
+		{
+		Cursor c=null;
+		DatabaseEntry k=new DatabaseEntry();
+		try {
+			c=openCursor(txn);
+			while(mover.move(c,k, new DatabaseEntry(), LockMode.DEFAULT)!=OperationStatus.SUCCESS)
+				{
+				throw new IllegalStateException("Cannot item with "+mover);
+				}
+			return entryToKey(k);
+			}
+		finally
+			{
+			if(c!=null) c.close();
+			}
+	
+		}
+	/** returns the last key in this database. Throws an exception if the db is empty */
+	public K getLastKey(Transaction txn)
+		{
+		return keyByMove(CursorMove.LAST, txn); 
+		}
+	/** returns the first key in this database. Throws an exception if the db is empty  */
+	public K getFirstKey(Transaction txn)
+		{
+		return keyByMove(CursorMove.FIRST, txn); 
+		}
+
+	
+	/** count the number of records from key(begin,end).  */
+	public long count(Transaction txn,K keyBegin,K keyEnd,boolean includeLast)
+		{
+		long N=0;
+		Cursor c=null;
+		DatabaseEntry k=new DatabaseEntry();
+		DatabaseEntry kE=new DatabaseEntry();
+		Comparator<byte[]> cmp=getDatabase().getConfig().getBtreeComparator();
+		DatabaseEntry v=new DatabaseEntry();
+		keyToEntry(keyBegin, k);
+		keyToEntry(keyEnd, kE);
+		try {
+			c=openCursor(txn);
+			CursorMove mover=CursorMove.SEARCH_KEY_RANGE;
+			while(mover.move(c,k,v, LockMode.DEFAULT)==OperationStatus.SUCCESS)
+				{
+				int diff=cmp.compare(
+						k.getData(),
+						kE.getData()
+						);
+				if(diff>0 || (diff==0 && !includeLast)) break;
+				++N;
+				mover=CursorMove.NEXT;
+				}
+			}
+		finally
+			{
+			if(c!=null) c.close();
+			}
+		return N;
+		}
+
+	
 	}

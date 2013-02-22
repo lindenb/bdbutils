@@ -12,19 +12,7 @@ public class Timer
 
 	private static long du(File f)
 		{
-		long S=0L;
-		if(f.isDirectory())
-			{
-			for(File sub:f.listFiles())
-				{
-				S+=du(sub);
-				}
-			}
-		else
-			{
-			S=f.length();
-			}
-		return S;
+		return BerkeleyDbUtils.diskUsage(f);
 		}
 	
 	private static String duStr(long diskusage)
