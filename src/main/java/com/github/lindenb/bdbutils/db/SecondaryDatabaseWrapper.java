@@ -8,24 +8,36 @@ import com.sleepycat.je.SecondaryDatabase;
 import com.sleepycat.je.Transaction;
 
 public class SecondaryDatabaseWrapper<K,PKEY,V>
-	extends AbstractDatabaseWrapper<K,V,SecondaryDatabase,SecondaryCursor>
+	extends AbstractDatabaseWrapper<K,V,SecondaryDatabase,SecondaryCursor,SecondaryConfig>
 	{
+	/** the secondary db */
 	private SecondaryDatabase database=null;
+	/** link to the primary database */
 	private DatabaseWrapper<PKEY,V> primaryDb=null;
 	
 	
+	@Override
+	/** creates a default config for this database */
+	public SecondaryConfig createDefaultConfig()
+		{
+		SecondaryConfig cfg=new SecondaryConfig();
+		return cfg;
+		}
+	
+	/** link to the primary database, it is set during the 'open' operation */
 	public DatabaseWrapper<PKEY,V> getOwner()
 		{
 		return primaryDb;
 		}
 	
-	
+	/** get the binding for the primary key of the secondary database */
 	public EntryBinding<PKEY> getPrimaryKeyDataBinding()
 		{
 		return getOwner().getKeyBinding();
 		}
 	
 	@Override
+	/** get the data binding, it is the dataBinding of the <b>Primary</b> database */
 	public EntryBinding<V> getDataBinding()
 		{
 		if(getOwner()==null) throw new NullPointerException();
@@ -34,32 +46,36 @@ public class SecondaryDatabaseWrapper<K,PKEY,V>
 		}
 	
 	@Override
+	/** returns the primary database */
 	public SecondaryDatabase getDatabase()
 		{
 		return this.database;
 		}
 	
+	
+	
 	@Override
+	/** open a secondary cursor for this database */
 	public SecondaryCursor openCursor(Transaction txn)
 		{
-		return getDatabase().openCursor(txn, null);
+		return getDatabase().openCursor(txn, createCursorConfig());
 		}
 
 	
 	public SecondaryDatabaseWrapper<K,PKEY,V> open(
 		Transaction txn,
-		String databaseName,
 		DatabaseWrapper<PKEY,V> primary,
 		SecondaryConfig dbConfig
 		)
 		{
-	
+		
 		if(this.database==null)
 			{
 			this.primaryDb=primary;
+			if(dbConfig==null) dbConfig=createDefaultConfig();
 			this.database=primary.getDatabase().getEnvironment().openSecondaryDatabase(
 				txn,
-				databaseName,
+				getName(),
 				primary.getDatabase(),
 				dbConfig
 				);

@@ -13,7 +13,7 @@ import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
 public class DatabaseWrapper<K,V>
-	extends AbstractDatabaseWrapper<K,V,Database,Cursor>
+	extends AbstractDatabaseWrapper<K,V,Database,Cursor,DatabaseConfig>
 	{
 	private Database database=null;
 	private EntryBinding<V> dataBinding;
@@ -21,6 +21,13 @@ public class DatabaseWrapper<K,V>
 	public DatabaseWrapper()
 		{
 
+		}
+	@Override
+	/** creates a default config for this database */
+	public DatabaseConfig createDefaultConfig()
+		{
+		DatabaseConfig cfg=new DatabaseConfig();
+		return cfg;
 		}
 	
 	@Override
@@ -41,11 +48,12 @@ public class DatabaseWrapper<K,V>
 		return database;
 		}
 	
-	public DatabaseWrapper<K,V> open(Environment env,Transaction txn,String name,DatabaseConfig dbConfig)
+	public DatabaseWrapper<K,V> open(Environment env,Transaction txn,DatabaseConfig dbConfig)
 		{
 		 if(this.database==null)
 		 	{
-		 	this.database=env.openDatabase(txn,name,dbConfig) ;
+		 	if(dbConfig==null) dbConfig=createDefaultConfig();
+		 	this.database=env.openDatabase(txn,getName(),dbConfig) ;
 		 	}
 		return this;
 		}
@@ -98,7 +106,7 @@ public class DatabaseWrapper<K,V>
 	@Override
 	public Cursor openCursor(Transaction txn)
 		{
-		return getDatabase().openCursor(txn, null);
+		return getDatabase().openCursor(txn, createCursorConfig());
 		}
 	
 	/** delete records from key(begin,end) */

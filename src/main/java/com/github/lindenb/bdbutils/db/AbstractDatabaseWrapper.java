@@ -13,17 +13,22 @@ import com.github.lindenb.bdbutils.util.Pair;
 import com.github.lindenb.bdbutils.util.TransformIterator;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Cursor;
+import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.Database;
+import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
-public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSORTYPE extends Cursor>
+public abstract class AbstractDatabaseWrapper<K,V,
+	DBTYPE extends Database,
+	CURSORTYPE extends Cursor,
+	CONFIGTYPE extends DatabaseConfig>
 	implements Iterable<Pair<K, V>>
 	{
 	private EntryBinding<K> keyBinding;
-
+	private String name;
 	
 	protected AbstractDatabaseWrapper()
 		{
@@ -31,15 +36,32 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 		}
 	
 
-	
+	/** returns the underlaying database */
 	protected abstract DBTYPE getDatabase();
+	/** creates a default config for this database */
+	public abstract CONFIGTYPE createDefaultConfig();
 	
+	/** test wether the database is open */
 	public boolean isOpen()
 		{
 		return getDatabase()!=null;
 		}
 	
+	/** close this database */
 	public abstract void close();
+	
+	/** return the name for this database */
+	public String getName()
+		{
+		return this.name;
+		}
+	
+	/** set this database name */
+	public void setName(String name)
+		{
+		this.name=name;
+		}
+
 	
 	public EntryBinding<K> getKeyBinding()
 		{
@@ -52,6 +74,12 @@ public abstract class AbstractDatabaseWrapper<K,V,DBTYPE extends Database,CURSOR
 		}
 	
 	public abstract EntryBinding<V> getDataBinding();
+	
+	/** creates a default cursor config, returns null by default */
+	public CursorConfig createCursorConfig()
+		{
+		return null;
+		}
 	
 	
 	private <X> DatabaseEntry createEntry(EntryBinding<X> bind,X x)
