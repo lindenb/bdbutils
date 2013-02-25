@@ -18,6 +18,18 @@ public class DatabaseWrapper<K,V>
 	private Database database=null;
 	private EntryBinding<V> dataBinding;
 	
+	/** default internal secondary database */
+	public class SecondaryInternalDatabaseWrapper<T>
+		extends SecondaryDatabaseWrapper<T, K, V>
+		{
+		@Override
+		public DatabaseWrapper<K, V> getOwner()
+			{
+			return DatabaseWrapper.this;
+			}
+		}
+	
+	
 	public DatabaseWrapper()
 		{
 
