@@ -1,10 +1,8 @@
 package com.github.lindenb.bdbutils.bio.interval;
 
-import com.github.lindenb.bdbutils.db.DatabaseWrapper;
 import com.github.lindenb.bdbutils.db.SecondaryDatabaseWrapper;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.SecondaryConfig;
-import com.sleepycat.je.Transaction;
 
 public class AbstractBedDatabaseWrapper<K, V> extends
 		SecondaryDatabaseWrapper<TidBinPos, K, V>
@@ -15,16 +13,14 @@ public class AbstractBedDatabaseWrapper<K, V> extends
 		setKeyBinding(TidBinPosBinding.getInstance());
 		}
 	
+	
 	@Override
-	/** set setBtreeComparator to TidBinPosSorter and sortedDuplicate=true */
-	public SecondaryDatabaseWrapper<TidBinPos, K, V> open(Transaction txn,
-			String databaseName, DatabaseWrapper<K, V> primary,
-			SecondaryConfig dbConfig)
+	public SecondaryConfig createDefaultConfig()
 		{
-		dbConfig.setBtreeComparator(TidBinPosSorter.class);
-		dbConfig.setSortedDuplicates(true);
-		super.open(txn, databaseName, primary, dbConfig);
-		return this;
+		SecondaryConfig cfg= super.createDefaultConfig();
+		cfg.setBtreeComparator(TidBinPosSorter.class);
+		cfg.setSortedDuplicates(true);
+		return cfg;	
 		}
 	
 	@Override

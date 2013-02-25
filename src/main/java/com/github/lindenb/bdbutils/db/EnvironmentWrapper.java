@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.lindenb.bdbutils.util.BerkeleyDbUtils;
+import com.sleepycat.je.CheckpointConfig;
+import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
 public class EnvironmentWrapper
 	{
 	private Environment environment=null;
-	protected List<DatabaseWrapper<?, ?>> databases=new ArrayList<DatabaseWrapper<?,?>>();
 	
 	public void open(File dir,EnvironmentConfig cfg)
 		{
@@ -40,17 +41,26 @@ public class EnvironmentWrapper
 		return String.valueOf(du(home));
 		}
 	
-	protected void closeDatabases()
+	/** http://stackoverflow.com/questions/15065538 */
+	public void checkpointAndSync()
 		{
-		for(DatabaseWrapper<?, ?> db:databases)
-			{
-			db.close();
-			}
+		if(this.environment==null) return;
+		this.environment.sync();
+		CheckpointConfig force = new CheckpointConfig();
+		force.setForce(true);
+		try
+		    {
+			this.environment.checkpoint(force);
+		    } catch (DatabaseException e)
+		    {
+		    	e.printStackTrace();
+		    	System.err.println("Can not chekpoint db " );
+		    }
 		}
+	
 	
 	public void close()
 		{
-		closeDatabases();
 		if(this.environment!=null)
 			{
 			try {this.environment.close();}catch(Exception err){}

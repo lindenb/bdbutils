@@ -9,19 +9,21 @@ public class DefaultDictionary
 	{
 	private String tokens[];
 	private Map<String,Integer> map;
-	public DefaultDictionary(String tokens[])
+	private boolean casesensible;
+	public DefaultDictionary(String tokens[],boolean casesensible)
 		{
+		this.casesensible=casesensible;
 		this.tokens=tokens;
 		this.map= new java.util.HashMap<String,Integer>(tokens.length);
 		for(String s:tokens)
 			{
-			map.put(s.toUpperCase(),map.size());
+			map.put((casesensible?s:s.toUpperCase()),map.size());
 			}
 		}
 
 	public void addAlias(int idx,String alias)
 		{
-		alias=alias.toUpperCase();
+		alias=(this.casesensible?alias:alias.toUpperCase());
 		if(idx<0 || idx>=tokens.length) throw new IndexOutOfBoundsException();
 		Integer v=this.map.get(alias);
 		if(v!=null)
@@ -42,7 +44,7 @@ public class DefaultDictionary
 	public int getIndex(String key)
 		{
 		if(key==null) return -1;
-		Integer pos=map.get(key.toUpperCase());
+		Integer pos=map.get(casesensible?key:key.toUpperCase());
 		return pos==null?-1:pos.intValue();
 		}
 	@Override

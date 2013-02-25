@@ -5,3 +5,5 @@ src/.classpath
 src/.project
 jeter*
 build.properties
+.classpath
+.project
